@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Address {
+  id           Int     @id @default(autoincrement())
+  street       String
+  houseNumber  String
+  city         String
+  streetType   String
+  zipcode      String  @unique
+  provinceCode String
+  User         User?
+  countryId    Int
+  country      Country @relation(fields: [countryId], references: [id], onUpdate: Cascade)
+}
+
+model User {
+  id          Int        @id @default(autoincrement())
+  firstName   String?
+  lastName    String?
+  companyName String?
+  token       String?
+  addressId   Int        @unique
+  address     Address    @relation(fields: [addressId], references: [id], onUpdate: Cascade)
+  postUnits   PostUnit[] @relation()
+}
+
+model PostUnit {
+  id          Int    @id @default(autoincrement())
+  text        String
+  userId      Int
+  user        User   @relation(fields: [userId], references: [id], onUpdate: Cascade)
+  recipientId Int
+}
+
+model Recipient {
+  id           Int     @id @default(autoincrement())
+  firstName    String?
+  lastName     String?
+  companyName  String?
+  street       String
+  houseNumber  String
+  city         String
+  streetType   String
+  zipcode      String  @unique
+  provinceCode String
+  countryId    Int
+  country      Country @relation(fields: [countryId], references: [id], onUpdate: Cascade)
+}
+
+model PostalService {
+  id             Int             @id @default(autoincrement())
+  name           String
+  postUnitPrices PostUnitPrice[]
+}
+
+model PostUnitPrice {
+  id                          Int           @id @default(autoincrement())
+  priceInCents                Int
+  priceInCentsPerPage         Int
+  priceInCentsPrinting        Int
+  priceInCentsEnvelope        Int
+  priceInCentsfrontAndBack    Int?          @default(0)
+  priceInCentsColoredPages    Int?          @default(0)
+  priceInCentsReturnReceipt   Int?          @default(0)
+  priceInCentsShippingReceipt Int?          @default(0)
+  postalServiceId             Int
+  postalService               PostalService @relation(fields: [postalServiceId], references: [id], onUpdate: Cascade)
+  countryId                   Int
+  country                     Country       @relation(fields: [countryId], references: [id], onUpdate: Cascade)
+}
+
+model ApiKey {
+  id    Int    @id @default(autoincrement())
+  token String @unique
+}
+
+model Country {
+  id             Int             @id @default(autoincrement())
+  name           String          @unique
+  code           String          @unique
+  addresses      Address[]
+  recipients     Recipient[]
+  postUnitPrices PostUnitPrice[]
+}
